@@ -1,0 +1,15 @@
+{
+    "name": "bine/rinha-de-backend-2025-react-php",
+    "authors": [
+        {
+            "name": "Gianluca Bine",
+            "email": "gian_bine@hotmail.com"
+        }
+    ],
+    "require": {
+        "react/http": "^1.9",
+        "react/socket": "^1.15",
+        "predis/predis": "^3.0",
+        "tnapf/router": "^6.0"
+    }
+}
