@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/vendor/autoload.php';
 require_once 'utils.php';
 
 use Psr\Http\Message\ResponseInterface;
@@ -15,7 +14,7 @@ use Tnapf\Router\Routing\RouteRunner;
 
 $redis = createRedisConnection();
 
-$router = new Router();
+$router = new Router;
 
 $http = new HttpServer(
     static function (ServerRequestInterface $request) use ($router) {
@@ -23,11 +22,8 @@ $http = new HttpServer(
     }
 );
 
-$router->get('/payments-summary', static function (
-    ServerRequestInterface $request,
-    ResponseInterface $response,
-    RouteRunner $route,
-) use ($redis) {
+$router->get('/payments-summary', static function (ServerRequestInterface $request,) use ($redis) {
+
     $queryParams = $request->getQueryParams();
 
     $from = isset($queryParams['from'])
@@ -46,7 +42,7 @@ $router->get('/payments-summary', static function (
         'fallback' => [
             'totalRequests' => 0,
             'totalAmount' => 0.0,
-        ]
+        ],
     ];
 
     $payments = $redis->lrange('payments', 0, -1);
@@ -82,11 +78,8 @@ $router->get('/payments-summary', static function (
     return Response::json($result);
 });
 
-$router->post('/payments', static function (
-    ServerRequestInterface $request,
-    ResponseInterface $response,
-    RouteRunner $route,
-) use ($redis) {
+$router->post('/payments', static function (ServerRequestInterface $request) use ($redis) {
+
     $requestData = json_decode((string) $request->getBody(), true);
 
     if (! $requestData) {
@@ -104,11 +97,7 @@ $router->post('/payments', static function (
     return new Response(Response::STATUS_NO_CONTENT);
 });
 
-$router->post('/purge-payments', static function (
-    ServerRequestInterface $request,
-    ResponseInterface $response,
-    RouteRunner $route,
-) use ($redis) {
+$router->post('/purge-payments', static function () use ($redis) {
     $redis->del('payments');
 
     return new Response(Response::STATUS_NO_CONTENT);
@@ -122,7 +111,7 @@ $router->catch(
         RouteRunner $route,
     ) {
         $exception = $route->exception;
-        $exceptionString = $exception->getMessage() . "\n" . $exception->getTraceAsString();
+        $exceptionString = $exception->getMessage() . PHP_EOL . $exception->getTraceAsString();
 
         $response->getBody()->write($exceptionString);
 
@@ -134,4 +123,4 @@ $router->catch(
 
 $http->listen(new SocketServer('0.0.0.0:8080'));
 
-echo '[Server] started at 8080.' . PHP_EOL;
+echo '[Server] started at 8080.'.PHP_EOL;
