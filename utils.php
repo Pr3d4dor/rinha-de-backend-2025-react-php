@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 use Predis\Client;
 
-require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__.'/vendor/autoload.php';
 
-define('PROCESSOR_DEFAULT', 1);
-define('PROCESSOR_FALLBACK', 2);
+const PROCESSOR_DEFAULT = 1;
+
+const PROCESSOR_FALLBACK = 2;
 
 define('BASE_URLS', [
     PROCESSOR_DEFAULT => $_ENV['PAYMENT_PROCESSOR_DEFAULT_URL'],
@@ -22,7 +23,7 @@ function doRequest(int $paymentProcessor, string $method, string $path, array $d
         throw new InvalidArgumentException("Unsupported payment processor: {$paymentProcessor}");
     }
 
-    $url = rtrim($processorUrl, '/') . '/' . ltrim($path, '/');
+    $url = rtrim($processorUrl, '/').'/'.ltrim($path, '/');
 
     $ch = curl_init();
 
@@ -61,7 +62,7 @@ function doRequest(int $paymentProcessor, string $method, string $path, array $d
             break;
         case 'GET':
             if (! empty($data)) {
-                $options[CURLOPT_URL] .= '?' . http_build_query($data);
+                $options[CURLOPT_URL] .= '?'.http_build_query($data);
             }
             break;
         default:
@@ -75,7 +76,7 @@ function doRequest(int $paymentProcessor, string $method, string $path, array $d
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
     if (curl_errno($ch)) {
-        throw new RuntimeException('Request error: ' . curl_error($ch));
+        throw new RuntimeException('Request error: '.curl_error($ch));
     }
 
     curl_close($ch);
@@ -90,7 +91,7 @@ function doRequest(int $paymentProcessor, string $method, string $path, array $d
 
 function queueJob(Client $redis, array $data): int
 {
-    return $redis->lpush('pending_payments', json_encode($data));
+    return $redis->lpush('pending_payments', (array) json_encode($data));
 }
 
 function createRedisConnection()

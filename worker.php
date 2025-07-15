@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-require __DIR__ . '/vendor/autoload.php';
 require_once 'utils.php';
 
 const REDIS_KEY = 'best_payment_processor';
@@ -19,7 +18,7 @@ while ($data = $redis->brpop('pending_payments', 0)) {
     $paymentProcessor = $redis->get(REDIS_KEY);
 
     if (! $paymentProcessor) {
-        logInfo('No payment processor available in Redis.' . PHP_EOL);
+        logInfo('No payment processor available in Redis.'.PHP_EOL);
 
         queueJob($redis, [
             'correlation_id' => $jobData['correlation_id'],
@@ -32,13 +31,13 @@ while ($data = $redis->brpop('pending_payments', 0)) {
     $payload = [
         'correlationId' => $jobData['correlation_id'],
         'amount' => $jobData['amount'],
-        'requestedAt' => (new DateTimeImmutable())->format('Y-m-d\TH:i:s.v\Z'),
+        'requestedAt' => (new DateTimeImmutable)->format('Y-m-d\TH:i:s.v\Z'),
     ];
 
     $response = doRequest(intval($paymentProcessor), 'POST', '/payments', $payload);
 
     if (! $response['is_ok']) {
-        logInfo('Request to payment processor failed.' . PHP_EOL);
+        logInfo('Request to payment processor failed.'.PHP_EOL);
 
         queueJob($redis, [
             'correlation_id' => $jobData['correlation_id'],
@@ -48,5 +47,8 @@ while ($data = $redis->brpop('pending_payments', 0)) {
         continue;
     }
 
-    $redis->lPush('payments', json_encode($payload + ['paymentProcessor' => intval($paymentProcessor)]));
+    $redis->lPush(
+        key: 'payments',
+        values: (array) json_encode($payload + ['paymentProcessor' => intval($paymentProcessor)])
+    );
 }
