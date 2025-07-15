@@ -47,8 +47,5 @@ while ($data = $redis->brpop('pending_payments', 0)) {
         continue;
     }
 
-    $redis->lPush(
-        key: 'payments',
-        values: (array) json_encode($payload + ['paymentProcessor' => intval($paymentProcessor)])
-    );
+    $redis->lPush('payments', json_encode($payload + ['paymentProcessor' => intval($paymentProcessor)]));
 }

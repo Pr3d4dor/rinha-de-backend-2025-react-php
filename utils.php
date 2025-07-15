@@ -91,7 +91,7 @@ function doRequest(int $paymentProcessor, string $method, string $path, array $d
 
 function queueJob(Client $redis, array $data): int
 {
-    return $redis->lpush('pending_payments', (array) json_encode($data));
+    return $redis->lpush('pending_payments', json_encode($data));
 }
 
 function createRedisConnection()
